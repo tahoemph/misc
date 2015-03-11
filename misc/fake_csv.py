@@ -11,16 +11,18 @@ import uuid
 
 parser = argparse.ArgumentParser()
 parser.add_argument('filenames', nargs="+")
-parser.add_argument('-F', dest='forced', nargs='+', default=[])
-parser.add_argument('-I', dest='left', nargs='+', default=[])
+parser.add_argument('-F', dest='forced', default=None)
+parser.add_argument('-I', dest='left', default=None)
 args = parser.parse_args()
 
-forced_columns = { col : col_type for forced in args.forced
-                  for col, col_type in forced.split(',') }
-left_columns = set(args.left)
+forced_columns = {}
+if args.forced:
+    forced_columns = dict(forced.split(',') for forced in args.forced.split(';'))
+left_columns = set(args.left.split(',')) if args.left else set()
+
 
 mapped_types = forced_columns
-mapped_values = {}  # A map of columns to a map of values.
+mapped_values = { x: {} for x in forced_columns }
 for input_file in args.filenames:
     # Sniff the first bit of the input figuring out the columns and possible
     # types.
